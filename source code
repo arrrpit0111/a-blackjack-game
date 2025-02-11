@@ -1,0 +1,98 @@
+#include <iostream>
+#include <vector>
+#include <ctime>
+#include <cstdlib>
+
+using namespace std;
+
+class Card {
+public:
+    string suit;
+    string rank;
+    int value;
+
+    Card(string s, string r, int v) : suit(s), rank(r), value(v) {}
+};
+
+class Deck {
+private:
+    vector<Card> cards;
+public:
+    Deck() {
+        string suits[] = {"Hearts", "Diamonds", "Clubs", "Spades"};
+        string ranks[] = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"};
+        int values[] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11};
+
+        for (int s = 0; s < 4; ++s) {
+            for (int r = 0; r < 13; ++r) {
+                cards.push_back(Card(suits[s], ranks[r], values[r]));
+            }
+        }
+        srand(time(0));
+    }
+
+    Card drawCard() {
+        if (cards.empty()) {
+            cout << "No more cards in the deck!" << endl;
+            exit(1);
+        }
+        int index = rand() % cards.size();
+        Card drawnCard = cards[index];
+        cards.erase(cards.begin() + index);
+        return drawnCard;
+    }
+};
+
+int main() {
+    Deck deck;
+    vector<Card> playerHand, dealerHand;
+    int playerScore = 0, dealerScore = 0;
+
+    playerHand.push_back(deck.drawCard());
+    playerHand.push_back(deck.drawCard());
+    dealerHand.push_back(deck.drawCard());
+    dealerHand.push_back(deck.drawCard());
+
+    cout << "Your cards: " << endl;
+    for (auto card : playerHand) {
+        cout << card.rank << " of " << card.suit << " (" << card.value << ")" << endl;
+        playerScore += card.value;
+    }
+    cout << "Your total: " << playerScore << endl;
+
+    cout << "Dealer's first card: " << dealerHand[0].rank << " of " << dealerHand[0].suit << endl;
+
+    while (playerScore < 21) {
+        char choice;
+        cout << "Do you want to hit (h) or stand (s)? ";
+        cin >> choice;
+
+        if (choice == 'h') {
+            Card newCard = deck.drawCard();
+            playerHand.push_back(newCard);
+            playerScore += newCard.value;
+            cout << "You drew: " << newCard.rank << " of " << newCard.suit << " (" << newCard.value << ")" << endl;
+            cout << "Your total: " << playerScore << endl;
+        } else {
+            break;
+        }
+    }
+
+    if (playerScore > 21) {
+        cout << "You busted! Dealer wins." << endl;
+    } else {
+        while (dealerScore < 17) {
+            Card newCard = deck.drawCard();
+            dealerHand.push_back(newCard);
+            dealerScore += newCard.value;
+        }
+        cout << "Dealer's total: " << dealerScore << endl;
+
+        if (dealerScore > 21 || playerScore > dealerScore) {
+            cout << "You win!" << endl;
+        } else {
+            cout << "Dealer wins." << endl;
+        }
+    }
+    return 0;
+}
